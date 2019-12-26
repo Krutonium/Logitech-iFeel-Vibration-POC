@@ -5,4 +5,8 @@
         <TargetFramework>netcoreapp2.2</TargetFramework>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="LibUsbDotNet" Version="3.0.48-alpha" />
+    </ItemGroup>
+
 </Project>
