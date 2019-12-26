@@ -8,3 +8,5 @@ On Linux it should *just work*, but it will also disable your Mouse and Keyboard
 On MacOS, you need an empty kext for the mouse
 
 On Windows, you just can't, apparently Mice and Keyboards are special snowflakes that you can't mess with.
+
+Info was gleaned from http://www.moore.cx/out/ifeel/
