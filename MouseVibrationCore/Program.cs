@@ -3,7 +3,9 @@ using LibUsbDotNet;
 using LibUsbDotNet.LibUsb;
 using LibUsbDotNet.Info;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -35,6 +37,7 @@ namespace MouseVibrationCore
                     }
                 }
             }
+            
             ProcessStartInfo info = new ProcessStartInfo();
             info.FileName= "modprobe";
             info.Arguments = "-r usbhid";
@@ -46,26 +49,61 @@ namespace MouseVibrationCore
             var readEnpoint = MyUsbDevice.OpenEndpointReader(ReadEndpointID.Ep01);
             //writeEndpoint.Write(BuildCommand(255, 10, 255), 3000, out var bytesWritten);
             //We don't care about bytesWritten, but we have to provide somthing soo...
-            int x = 0;
-            while (!Console.KeyAvailable)
+
+            for (int intensity = 255; intensity <= 255; intensity-=5)
             {
-                writeEndpoint.Write(CancelVibration(), 3000, out var bytesWritten0);
-                writeEndpoint.Write(BuildCommand(255, x, 255), 3000, out var bytesWritten1);
-                x += 1;
-                if (x > 100)
+                for (int delay = 0; delay < 100; delay+=5)
                 {
-                    x = 0; 
+                    int count = 250;
+                    //writeEndpoint.Write(CancelVibration(), 5, out var bytesWritten0);
+                        writeEndpoint.Write(BuildCommand(intensity, delay, count), 3000, out var bytesWritten1);
+                        //System.Threading.Thread.Sleep(5);
+
+                        var readBuffer = new byte[4];
+                        readEnpoint.Read(readBuffer, 20, out var readBytes);
+                        Console.Clear();
+                        Console.WriteLine("readBuffer:");
+                        foreach (var v in readBuffer)
+                        {
+                             Console.Write(Pad(v));
+                             Console.Write(",");
+                        }
+                        Console.WriteLine();
+
+                        UInt16 RelX = UInt16.Parse(readBuffer[1].ToString());
+                        UInt16 RelY = UInt16.Parse(readBuffer[2].ToString());
+
+                        //Higher than 128 is Positive
+                        //Below 128 is Negative
+                        
+                        
+                        
+                        Console.WriteLine("X: " + RelX);
+                        Console.WriteLine("Y: " + RelY);
+                        Console.WriteLine();
+                        Console.Write("Left Click: ");
+                        Console.WriteLine(IsBitSet(readBuffer[0], 7) ? "True" : "False");
+                        Console.Write("Right Click: ");
+                        Console.WriteLine(IsBitSet(readBuffer[0], 6) ? "True" : "False");
+                        Console.WriteLine("Intensity: " + intensity);
+                        Console.WriteLine("Delay: " + delay);
+                        Console.WriteLine("Count: " + count);
+                        Console.WriteLine("Bytes read from Mouse: " + readBytes);
+                        //System.Threading.Thread.Sleep(500);
                 }
-                Console.WriteLine(x);
-                System.Threading.Thread.Sleep(500);
             }
             writeEndpoint.Write(CancelVibration(),3000, out var bytesWritten);
+            MyUsbDevice.ResetDevice();
             MyUsbDevice.Close();
             info.Arguments = "usbhid";
             p = Process.Start(info);
             p.WaitForExit();
         }
  
+        static string Pad(byte b)
+        {
+            return Convert.ToString(b, 2).PadLeft(8, '0');
+        }
         static byte[] BuildCommand(int Intensity, int Delay, int Count)
         {
             Byte[] command = {0x11, 0x0a, (byte) Intensity, (byte) Delay, 0x0, (byte) Count, 0x0};
@@ -79,6 +117,20 @@ namespace MouseVibrationCore
         { 
             Byte[] command = {0x13, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
             return command;
+        }
+        static bool IsBitSet(byte b, int pos)
+        {
+            string p = Pad(b);
+            //Console.WriteLine(p);
+            List<char> lis = p.ToCharArray().ToList();
+            if (lis[pos] == '0')
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
     }
 }
