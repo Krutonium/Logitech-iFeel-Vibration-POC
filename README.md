@@ -1,4 +1,7 @@
 # Logitech-iFeel-Vibration-POC
+
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Krutonium/Logitech-iFeel-Vibration-POC) [![GitHub License](https://img.shields.io/github/license/Krutonium/Logitech-iFeel-Vibration-POC)](https://github.com/Krutonium/Logitech-iFeel-Vibration-POC/blob/master/LICENSE)
+
 This POC activates the Vibration Motor in the Logitech iFeel Mouse (Circa 2001)
 
 On Linux it should *just work*, but it will also disable your Mouse and Keyboard, so uh... Have SSH.
